@@ -12,6 +12,7 @@ import {
   facebookPages, removeFacebookAccount, saveFacebookConfig, startFacebookOAuth,
   verifyFacebookAccount, HttpError,
 } from './facebook.mjs'
+import { handleFacebookWebhook, listConversationMessages, listPageConversations, sendPageMessage, verifyFacebookWebhook } from './facebook-conversations.mjs'
 import { chatGateway, gatewayStatus, testGateway } from './gateway.mjs'
 
 const app = express()
@@ -37,7 +38,7 @@ app.use((req, res, next) => {
   }
   next()
 })
-app.use(express.json({ limit: '3mb' }))
+app.use(express.json({ limit: '3mb', verify: (req, _res, buffer) => { req.rawBody = Buffer.from(buffer) } }))
 app.use((req, _res, next) => {
   const cookies = Object.fromEntries(String(req.headers.cookie || '').split(';').map(part => part.trim()).filter(Boolean).map(part => {
     const index = part.indexOf('=')
@@ -63,6 +64,11 @@ const issueSession = (res, userId) => {
 }
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'madar-api' }))
+app.get('/api/facebook/webhook', (req, res) => res.send(verifyFacebookWebhook(req.query)))
+app.post('/api/facebook/webhook', (req, res) => {
+  if (!req.rawBody) return res.status(400).json({ message: 'جسم Webhook مطلوب.' })
+  res.json(handleFacebookWebhook({ payload: req.body, rawBody: req.rawBody, signature: req.get('x-hub-signature-256') }))
+})
 app.get('/api/auth/status', (req, res) => res.json({ setupRequired: userCount() === 0, authenticated: Boolean(req.user), user: req.user || null }))
 app.post('/api/auth/setup', asyncRoute(async (req, res) => {
   if (userCount() !== 0) throw new HttpError(409, 'تم إعداد الحساب الإداري مسبقًا.')
@@ -128,6 +134,15 @@ app.post('/api/facebook/accounts/:id/verify', requireAuth, asyncRoute(async (req
 }))
 app.get('/api/facebook/accounts/:id/pages', requireAuth, asyncRoute(async (req, res) => {
   res.json({ pages: await facebookPages(req.params.id, req.user.id) })
+}))
+app.get('/api/facebook/accounts/:id/pages/:pageId/conversations', requireAuth, asyncRoute(async (req, res) => {
+  res.json(await listPageConversations(req.params.id, req.params.pageId, req.user.id, { limit: req.query.limit }))
+}))
+app.get('/api/facebook/accounts/:id/pages/:pageId/conversations/:conversationId/messages', requireAuth, asyncRoute(async (req, res) => {
+  res.json({ messages: await listConversationMessages(req.params.id, req.params.pageId, req.params.conversationId, req.user.id, { limit: req.query.limit }) })
+}))
+app.post('/api/facebook/accounts/:id/pages/:pageId/messages', requireAuth, asyncRoute(async (req, res) => {
+  res.status(201).json(await sendPageMessage(req.params.id, req.params.pageId, req.user.id, req.body || {}))
 }))
 app.delete('/api/facebook/accounts/:id', requireAuth, (req, res) => {
   removeFacebookAccount(req.params.id, req.user.id)

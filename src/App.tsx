@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import AppLayout from '@/components/layout/AppLayout'
 import AuthScreen from '@/components/auth/AuthScreen'
 import { AppDataProvider, useAppData } from '@/context/AppDataContext'
+import Inbox from '@/pages/Inbox'
 
 const Dashboard = lazy(() => import('@/pages/Dashboard'))
 const Accounts = lazy(() => import('@/pages/Accounts'))
@@ -11,7 +12,6 @@ const ContentLibrary = lazy(() => import('@/pages/ContentLibrary'))
 const Campaigns = lazy(() => import('@/pages/Campaigns'))
 const Extraction = lazy(() => import('@/pages/Extraction'))
 const Automation = lazy(() => import('@/pages/Automation'))
-const Inbox = lazy(() => import('@/pages/Inbox'))
 const Team = lazy(() => import('@/pages/Team'))
 const Settings = lazy(() => import('@/pages/Settings'))
 

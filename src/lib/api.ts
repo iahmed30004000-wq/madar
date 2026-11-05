@@ -59,3 +59,43 @@ export const facebookApi = {
   pages: (id: string) => api<{ pages: Array<{ id: string; name: string; tasks: string[] }> }>(`/facebook/accounts/${id}/pages`),
   remove: (id: string) => api<{ ok: boolean }>(`/facebook/accounts/${id}`, { method: 'DELETE' }),
 }
+
+export interface FacebookConversation {
+  id: string
+  updatedTime: string
+  snippet: string
+  unreadCount: number
+  canReply: boolean
+  participants: Array<{ id: string; name: string }>
+}
+export interface FacebookMessage {
+  id: string
+  createdTime: string
+  from: { id: string; name: string }
+  to: Array<{ id: string; name: string }>
+  body: string
+  attachments: Array<{ id: string; mimeType?: string; name?: string; url?: string | null }>
+}
+
+export const facebookConversationApi = {
+  list: (accountId: string, pageId: string) => api<{ page: { id: string; name: string }; conversations: FacebookConversation[] }>(`/facebook/accounts/${accountId}/pages/${pageId}/conversations`),
+  messages: (accountId: string, pageId: string, conversationId: string) => api<{ messages: FacebookMessage[] }>(`/facebook/accounts/${accountId}/pages/${pageId}/conversations/${conversationId}/messages`),
+  send: (accountId: string, pageId: string, value: { recipientId: string; text: string }) => api<{ ok: boolean; recipientId: string; messageId: string }>(`/facebook/accounts/${accountId}/pages/${pageId}/messages`, { method: 'POST', body: JSON.stringify(value) }),
+}
+
+export interface AiStatus {
+  configured: boolean
+  primary: boolean
+  provider: 'openai-compatible'
+  baseUrl: string
+  model: string
+  keyConfigured: boolean
+  external: boolean
+}
+export interface AiChatMessage { role: 'system' | 'user' | 'assistant'; content: string }
+
+export const aiApi = {
+  status: () => api<AiStatus>('/ai/status'),
+  test: () => api<AiStatus & { ok: boolean; modelsCount: number; reply: string }>('/ai/test', { method: 'POST', body: '{}' }),
+  chat: (messages: AiChatMessage[]) => api<{ reply: string; model: string }>('/ai/chat', { method: 'POST', body: JSON.stringify({ messages }) }),
+}

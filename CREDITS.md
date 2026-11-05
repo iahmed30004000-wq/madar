@@ -1,11 +1,19 @@
-# الاعتمادات والتراخيص
+# Asset credits
 
-- **IBM Plex Sans Arabic** — خط مضمّن عبر حزمة `@fontsource/ibm-plex-sans-arabic`، رخصة SIL Open Font License 1.1.
-- **shadcn/ui وRadix UI** — مكونات واجهة، رخصة MIT.
-- **Lucide** — أيقونات `lucide-react`، رخصة ISC.
-- **Recharts** — رسوم بيانية، رخصة MIT.
-- **React وVite وTailwind CSS** — رخصة MIT.
-- **Sonner** — إشعارات واجهة، رخصة MIT.
-- **Express** — خادم HTTP وواجهة API، رخصة MIT.
+## Umayyad Mosque photograph
 
-البيانات والأسماء والحملات والحسابات المعروضة داخل التطبيق توضيحية ومصطنعة. لا تُستخدم صور أو شعارات أو أصول تصميم تخص FoxMaster أو Kingmaster.
+- **Work:** Syria, Damascus, The Umayyad Mosque, Islamic Architecture
+- **Creator:** Vyacheslav Argenberg
+- **Source:** https://commons.wikimedia.org/w/index.php?curid=83435998
+- **License:** Creative Commons Attribution 4.0 International (CC BY 4.0)
+- **License URL:** https://creativecommons.org/licenses/by/4.0/
+- **Changes:** resized to 1920 × 1440 and compressed as `public/assets/umayyad-mosque.jpg`; used with a dark green overlay and Islamic geometric CSS patterns.
+
+## Open-source research reference
+
+- **SimplePost:** https://github.com/simple-post/core — MIT License. Downloaded for architecture evaluation only; not linked or copied into the application in this change.
+
+## Typography and icons
+
+- **IBM Plex Sans Arabic:** distributed by `@fontsource/ibm-plex-sans-arabic` under the SIL Open Font License.
+- **Lucide icons:** distributed by `lucide-react` under the ISC License.

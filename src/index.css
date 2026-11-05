@@ -162,3 +162,34 @@
     }
   }
 }
+
+@layer components {
+  .islamic-mark {
+    clip-path: polygon(50% 0%, 85.36% 14.64%, 100% 50%, 85.36% 85.36%, 50% 100%, 14.64% 85.36%, 0% 50%, 14.64% 14.64%);
+    border-radius: 3px;
+  }
+
+  .islamic-sidebar {
+    background-image:
+      radial-gradient(circle at 20% 4%, rgb(52 211 153 / 0.09), transparent 28%),
+      conic-gradient(from 45deg at 50% 50%, transparent 0deg 87deg, rgb(110 231 183 / 0.035) 87deg 93deg, transparent 93deg 360deg);
+    background-size: auto, 48px 48px;
+  }
+
+  .islamic-overlay {
+    background-image:
+      conic-gradient(from 45deg at 50% 50%, transparent 0deg 82deg, rgb(167 243 208 / 0.28) 82deg 98deg, transparent 98deg 360deg),
+      conic-gradient(from 0deg at 50% 50%, transparent 0deg 82deg, rgb(167 243 208 / 0.18) 82deg 98deg, transparent 98deg 360deg);
+    background-size: 56px 56px;
+    mask-image: linear-gradient(to left, black, transparent 80%);
+  }
+
+  .cinematic-hero::after {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    border: 1px solid rgb(167 243 208 / 0.14);
+    border-radius: 27px;
+    pointer-events: none;
+  }
+}

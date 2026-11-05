@@ -53,7 +53,7 @@ export function saveFacebookConfig({ appId, appSecret, publicUrl }) {
   return facebookConfig()
 }
 
-async function graphRequest(path, accessToken, options = {}) {
+export async function graphRequest(path, accessToken, options = {}) {
   const response = await fetch(`${graphBase}/${graphVersion}/${path}`, {
     ...options,
     headers: { ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}), ...(options.headers || {}) },

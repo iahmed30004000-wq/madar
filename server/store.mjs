@@ -56,6 +56,14 @@ db.exec(`
     tasks_json TEXT NOT NULL DEFAULT '[]',
     UNIQUE(account_id, provider_page_id)
   );
+  CREATE TABLE IF NOT EXISTS facebook_events (
+    event_id TEXT PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES social_accounts(id) ON DELETE CASCADE,
+    provider_page_id TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );
 `)
 
 const iso = () => new Date().toISOString()
@@ -181,4 +189,17 @@ export function storeAccountPages(accountId, pages) {
 export function listAccountPages(accountId) {
   return db.prepare('SELECT id,provider_page_id,name,tasks_json FROM account_pages WHERE account_id=?').all(accountId)
     .map(row => ({ id: row.provider_page_id, name: row.name, tasks: JSON.parse(row.tasks_json || '[]') }))
+}
+
+export function getAccountPage(accountId, providerPageId) {
+  return db.prepare('SELECT * FROM account_pages WHERE account_id=? AND provider_page_id=?').get(accountId, providerPageId)
+}
+
+export function recordFacebookEvent({ eventId, providerPageId, eventType, payload }) {
+  const account = db.prepare('SELECT account_id FROM account_pages WHERE provider_page_id=?').get(providerPageId)
+  if (!account) return false
+  const result = db.prepare(`INSERT INTO facebook_events (event_id,account_id,provider_page_id,event_type,payload_json,created_at)
+    VALUES (?,?,?,?,?,?) ON CONFLICT(event_id) DO NOTHING`)
+    .run(eventId, account.account_id, providerPageId, eventType, JSON.stringify(payload), iso())
+  return result.changes === 1
 }

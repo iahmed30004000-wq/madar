@@ -1,112 +1,94 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { Activity, ArrowLeft, Database, FileText, Link2, Megaphone, Pause, Play, Plus, Send, Users } from 'lucide-react'
+import { Activity, ArrowLeft, ArrowUpLeft, Check, CheckCircle2, MessageSquare, Play, Sparkles, Waypoints } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useAppData } from '@/context/AppDataContext'
-import { campaignStatusLabels, campaignTypeLabels, formatDate } from '@/lib/demo'
-import { DemoNotice, MetricCard, PageHeader, PlatformBadge, StatusBadge } from '@/components/shared'
-
-const weekly = [
-  { day: 'السبت', sent: 86, success: 79 }, { day: 'الأحد', sent: 112, success: 101 },
-  { day: 'الاثنين', sent: 74, success: 69 }, { day: 'الثلاثاء', sent: 136, success: 121 },
-  { day: 'الأربعاء', sent: 118, success: 108 }, { day: 'الخميس', sent: 154, success: 139 },
-  { day: 'الجمعة', sent: 62, success: 58 },
-]
-const pieColors = ['#0f766e', '#0284c7', '#d97706', '#64748b', '#94a3b8']
+import { formatDate } from '@/lib/demo'
+import { cn } from '@/lib/utils'
 
 export default function Dashboard() {
-  const { data, setData, addActivity } = useAppData()
+  const { data, user } = useAppData()
   const navigate = useNavigate()
-  const totalContacts = data.groups.reduce((sum, group) => sum + group.contacts.length, 0)
-  const activeAccounts = data.accounts.filter(account => account.status === 'active').length
-  const totalSuccess = data.campaigns.reduce((sum, campaign) => sum + campaign.stats.success, 0)
-  const running = data.campaigns.filter(campaign => ['active', 'scheduled', 'paused'].includes(campaign.status))
-  const statusData = useMemo(() => (['active', 'scheduled', 'paused', 'completed', 'draft'] as const).map(status => ({
-    name: campaignStatusLabels[status], value: data.campaigns.filter(campaign => campaign.status === status).length,
-  })).filter(item => item.value > 0), [data.campaigns])
+  const [guideOpen, setGuideOpen] = useState(false)
+  const realAccounts = data.accounts.filter(account => account.real && account.status === 'active')
+  const activeCampaigns = data.campaigns.filter(campaign => ['active', 'scheduled', 'paused'].includes(campaign.status))
 
-  const toggleCampaign = (id: string) => {
-    const campaign = data.campaigns.find(item => item.id === id)
-    if (!campaign) return
-    const nextStatus = campaign.status === 'active' ? 'paused' : 'active'
-    setData(current => ({ ...current, campaigns: current.campaigns.map(item => item.id === id ? { ...item, status: nextStatus } : item) }))
-    addActivity(nextStatus === 'paused' ? 'إيقاف حملة مؤقتًا' : 'استئناف حملة', campaign.name)
-  }
+  const next = useMemo(() => {
+    if (!realAccounts.length) return { title: 'اربط أول حساب فيسبوك', detail: 'ابدأ بالحساب، ثم اختر الصفحة التي تريد إدارتها.', path: '/accounts?new=1', action: 'ربط حساب' }
+    if (!data.conversations.length) return { title: 'افتح المحادثات', detail: 'انتقل إلى صندوق الوارد لمراجعة العملاء وتجهيز الردود.', path: '/inbox', action: 'فتح المحادثات' }
+    if (!activeCampaigns.length) return { title: 'جهّز أول حملة', detail: 'اختر الجمهور والمحتوى والموعد، ثم راجع كل شيء قبل الحفظ.', path: '/campaigns?new=1', action: 'إنشاء حملة' }
+    return { title: 'راجع عملك اليوم', detail: 'تابع المحادثات والحملات النشطة، أو اسأل وكيل مدار عن الخطوة التالية.', path: '/campaigns', action: 'عرض الحملات' }
+  }, [realAccounts.length, data.conversations.length, activeCampaigns.length])
+
+  const steps = [
+    { index: 1, title: 'اربط الحساب', detail: realAccounts.length ? `${realAccounts.length} حساب حقيقي متصل` : 'لم يبدأ بعد', path: '/accounts', done: realAccounts.length > 0 },
+    { index: 2, title: 'اختر الصفحة', detail: realAccounts.length ? 'الصفحات متاحة من الحساب' : 'بعد ربط الحساب', path: '/accounts', done: realAccounts.length > 0 },
+    { index: 3, title: 'راجع المحادثات', detail: `${data.conversations.length} محادثة في مساحة العمل`, path: '/inbox', done: realAccounts.length > 0 && data.conversations.length > 0 },
+    { index: 4, title: 'جهّز الحملة', detail: activeCampaigns.length ? `${activeCampaigns.length} حملة قيد العمل` : 'راجع ثم احفظ', path: '/campaigns', done: realAccounts.length > 0 && activeCampaigns.length > 0 },
+  ]
 
   return (
-    <>
-      <PageHeader
-        title="أهلًا أحمد، هذا ملخص العمل اليوم"
-        description="تابع الحملات والحسابات والجمهور من مكان واحد، مع سجل واضح لكل إجراء يقوم به الفريق."
-        actions={<Button className="h-11 bg-emerald-700 text-white hover:bg-emerald-800" onClick={() => navigate('/campaigns?new=1')}><Plus />إنشاء حملة</Button>}
-      />
-      <DemoNotice>الأرقام والحملات هنا بيانات توضيحية لمراجعة تجربة العمل. لا يوجد اتصال أو إرسال فعلي لأي منصة.</DemoNotice>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="حملات قيد العمل" value={running.length} detail={`${data.campaigns.filter(c => c.status === 'scheduled').length} حملات مجدولة قادمة`} icon={<Megaphone className="size-5" />} />
-        <MetricCard label="حسابات متصلة" value={`${activeAccounts}/${data.accounts.length}`} detail={`${data.accounts.filter(a => a.status === 'attention').length} حساب يحتاج إلى مراجعة`} icon={<Link2 className="size-5" />} />
-        <MetricCard label="إجمالي الجمهور" value={totalContacts} detail={`${data.groups.length} مجموعات جهات اتصال`} icon={<Users className="size-5" />} />
-        <MetricCard label="إجراءات ناجحة" value={totalSuccess} detail="ضمن الحملات التوضيحية الحالية" icon={<Send className="size-5" />} />
-      </div>
+    <div className="space-y-6">
+      <section className="cinematic-hero relative isolate overflow-hidden rounded-[28px] bg-[#102f2b] text-white shadow-[0_24px_70px_-32px_rgba(16,47,43,0.75)]">
+        <img src="/assets/umayyad-mosque.jpg" alt="" aria-hidden="true" className="absolute inset-0 -z-20 h-full w-full object-cover object-center opacity-45" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,rgba(9,34,31,0.98)_8%,rgba(16,47,43,0.87)_46%,rgba(16,47,43,0.30)_100%)]" />
+        <div className="islamic-overlay absolute inset-0 -z-10 opacity-25" />
+        <div className="relative grid min-h-[460px] gap-8 p-6 md:p-10 xl:grid-cols-[1.25fr_0.75fr] xl:items-end">
+          <div className="max-w-3xl">
+            <div className="mb-6 flex items-center gap-3"><span className="islamic-mark flex size-12 items-center justify-center bg-emerald-400 text-[#102f2b]"><Waypoints className="size-6" /></span><div><p className="text-sm font-semibold text-emerald-200">مدار · مساحة فريقك</p><p className="mt-1 text-xs text-emerald-100/65">عربي، واضح، وعلى خادمك</p></div></div>
+            <h1 className="max-w-2xl text-4xl font-bold leading-[1.25] tracking-tight md:text-6xl md:leading-[1.18]">من الرسالة…<br /><span className="text-emerald-300">إلى النتيجة.</span></h1>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-emerald-50/80 md:text-lg">اجمع حساباتك وصفحاتك ومحادثاتك في مسار واحد بسيط. كل خطوة تقود للتي بعدها، من دون قوائم مزدحمة أو إجراءات مخفية.</p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Button className="h-12 bg-emerald-400 px-5 font-semibold text-[#102f2b] hover:bg-emerald-300" onClick={() => navigate(next.path)}>{next.action}<ArrowLeft /></Button>
+              <Button variant="outline" className="h-12 border-white/25 bg-white/5 px-5 text-white hover:bg-white/10 hover:text-white" onClick={() => setGuideOpen(true)}><Play />كيف يعمل مدار؟</Button>
+            </div>
+          </div>
+          <div className="rounded-3xl border border-white/15 bg-[#0c2925]/85 p-5 backdrop-blur-md md:p-6">
+            <p className="text-xs font-medium text-emerald-300">المهمة التالية</p>
+            <h2 className="mt-3 text-2xl font-bold leading-9">{next.title}</h2>
+            <p className="mt-3 text-sm leading-7 text-emerald-50/70">{next.detail}</p>
+            <button type="button" onClick={() => navigate(next.path)} className="mt-5 flex min-h-11 w-full cursor-pointer items-center justify-between rounded-xl border border-emerald-300/20 bg-emerald-400/10 px-4 text-sm font-medium text-emerald-200 transition-colors hover:bg-emerald-400/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300">انتقل مباشرة<ArrowUpLeft className="size-4" /></button>
+            <button type="button" onClick={() => window.dispatchEvent(new CustomEvent('madar:assistant'))} className="mt-2 flex min-h-11 w-full cursor-pointer items-center justify-between rounded-xl px-4 text-sm text-emerald-100/70 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"><span className="flex items-center gap-2"><Sparkles className="size-4" />أريد مساعدة في هذه الخطوة</span></button>
+          </div>
+        </div>
+        <a href="https://commons.wikimedia.org/w/index.php?curid=83435998" target="_blank" rel="noreferrer" className="absolute bottom-3 left-4 rounded bg-black/20 px-2 py-1 text-[10px] text-white/55 transition-colors hover:text-white">الصورة: Vyacheslav Argenberg · CC BY 4.0</a>
+      </section>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(300px,0.8fr)]">
-        <Card className="border-slate-200/80 shadow-none">
-          <CardHeader><CardTitle className="text-lg">أداء الرسائل هذا الأسبوع</CardTitle><CardDescription>الرسائل المستهدفة مقارنة بالعمليات الناجحة</CardDescription></CardHeader>
-          <CardContent className="h-72 pe-0 ps-2" dir="ltr">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weekly} margin={{ top: 8, right: 8, bottom: 0, left: -20 }} barGap={3}>
-                <CartesianGrid vertical={false} stroke="#e2e8f0" strokeDasharray="3 3" />
-                <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                <YAxis tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: 10, border: '1px solid #e2e8f0', fontFamily: 'IBM Plex Sans Arabic' }} />
-                <Bar name="المستهدفة" dataKey="sent" fill="#c7d2ce" radius={[5, 5, 0, 0]} maxBarSize={22} />
-                <Bar name="الناجحة" dataKey="success" fill="#0f766e" radius={[5, 5, 0, 0]} maxBarSize={22} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        <Card className="border-slate-200/80 shadow-none">
-          <CardHeader><CardTitle className="text-lg">توزيع حالات الحملات</CardTitle><CardDescription>لقطة مباشرة لمساحة العمل</CardDescription></CardHeader>
-          <CardContent>
-            <div className="h-44" dir="ltr"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={statusData} dataKey="value" innerRadius={52} outerRadius={75} paddingAngle={3} stroke="none">{statusData.map((entry, index) => <Cell key={entry.name} fill={pieColors[index % pieColors.length]} />)}</Pie><Tooltip contentStyle={{ borderRadius: 10, border: '1px solid #e2e8f0', fontFamily: 'IBM Plex Sans Arabic' }} /></PieChart></ResponsiveContainer></div>
-            <div className="mt-2 grid grid-cols-2 gap-3">{statusData.map((item, index) => <div key={item.name} className="flex items-center gap-2 text-sm"><span className="size-2.5 rounded-sm" style={{ background: pieColors[index % pieColors.length] }} /><span className="text-slate-500">{item.name}</span><span className="mr-auto font-semibold text-ink">{item.value}</span></div>)}</div>
-          </CardContent>
-        </Card>
-      </div>
+      <section aria-labelledby="workflow-title">
+        <div className="mb-4 flex items-end justify-between gap-4"><div><h2 id="workflow-title" className="text-xl font-bold text-ink">مسار العمل</h2><p className="mt-1 text-sm text-slate-500">أربع محطات. لا تحتاج أكثر من ذلك للبدء.</p></div><span className="hidden text-xs text-slate-400 md:inline">مرحبًا {user?.name?.split(' ')[0] || 'بك'}</span></div>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {steps.map(step => <button key={step.index} type="button" onClick={() => navigate(step.path)} className={cn('group flex min-h-28 cursor-pointer items-center gap-4 rounded-2xl border bg-white p-4 text-right transition-all hover:-translate-y-0.5 hover:border-emerald-600/35 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600', step.done ? 'border-emerald-700/20' : 'border-slate-200')}>
+            <span className={cn('flex size-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold', step.done ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-500')}>{step.done ? <Check className="size-5" /> : step.index}</span>
+            <span className="min-w-0 flex-1"><span className="block font-semibold text-ink">{step.title}</span><span className="mt-1 block text-xs leading-5 text-slate-500">{step.detail}</span></span><ArrowUpLeft className="size-4 shrink-0 text-slate-300 transition-colors group-hover:text-emerald-700" />
+          </button>)}
+        </div>
+      </section>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(300px,0.8fr)]">
-        <Card className="border-slate-200/80 shadow-none">
-          <CardHeader className="flex-row items-center justify-between space-y-0"><div><CardTitle className="text-lg">الحملات الحالية</CardTitle><CardDescription className="mt-1.5">إدارة سريعة للحملات النشطة والمجدولة</CardDescription></div><Button variant="ghost" className="text-emerald-700" onClick={() => navigate('/campaigns')}>عرض الكل<ArrowLeft /></Button></CardHeader>
-          <CardContent className="px-0 pb-0">
-            <Table>
-              <TableHeader><TableRow><TableHead className="pr-6">الحملة</TableHead><TableHead>المنصة</TableHead><TableHead>الحالة</TableHead><TableHead>التقدم</TableHead><TableHead className="pl-6"><span className="sr-only">إجراء</span></TableHead></TableRow></TableHeader>
-              <TableBody>{running.map(campaign => <TableRow key={campaign.id}>
-                <TableCell className="pr-6"><div className="max-w-56"><p className="truncate font-medium text-ink">{campaign.name}</p><p className="mt-1 text-xs text-slate-500">{campaignTypeLabels[campaign.type]}</p></div></TableCell>
-                <TableCell><PlatformBadge platform={campaign.platform} /></TableCell>
-                <TableCell><StatusBadge status={campaign.status} label={campaignStatusLabels[campaign.status]} /></TableCell>
-                <TableCell><div className="flex min-w-24 items-center gap-2"><Progress value={campaign.progress} className="h-1.5" /><span className="text-xs text-slate-500">{campaign.progress}%</span></div></TableCell>
-                <TableCell className="pl-6"><Button variant="ghost" size="icon" aria-label={campaign.status === 'active' ? `إيقاف ${campaign.name}` : `استئناف ${campaign.name}`} onClick={() => toggleCampaign(campaign.id)}>{campaign.status === 'active' ? <Pause /> : <Play />}</Button></TableCell>
-              </TableRow>)}</TableBody>
-            </Table>
-          </CardContent>
+      <div className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
+        <Card className="border-emerald-900/10 shadow-none">
+          <CardHeader><CardTitle className="flex items-center gap-2 text-lg"><Activity className="size-5 text-emerald-700" />آخر النشاطات</CardTitle><CardDescription>سجل حقيقي لما يتغير داخل مساحة العمل</CardDescription></CardHeader>
+          <CardContent><div className="space-y-0">{data.activities.slice(0, 5).map(activity => <div key={activity.id} className="flex gap-4 border-b py-4 last:border-0 last:pb-0 first:pt-0"><div className="mt-1.5 size-2 shrink-0 rounded-full bg-emerald-600" /><div className="min-w-0 flex-1"><p className="text-sm font-medium text-ink">{activity.action}</p><p className="mt-1 text-sm leading-6 text-slate-500">{activity.detail}</p></div><div className="shrink-0 text-left text-xs text-slate-400"><p>{activity.actor}</p><p className="mt-1">{formatDate(activity.time, true)}</p></div></div>)}</div></CardContent>
         </Card>
-        <Card className="border-slate-200/80 shadow-none">
-          <CardHeader><CardTitle className="text-lg">إجراءات سريعة</CardTitle><CardDescription>ابدأ المهام الأكثر استخدامًا</CardDescription></CardHeader>
-          <CardContent className="space-y-2">
-            <Button variant="outline" className="h-12 w-full justify-start" onClick={() => navigate('/extraction?new=1')}><Database className="text-emerald-700" />استخراج بيانات جديد</Button>
-            <Button variant="outline" className="h-12 w-full justify-start" onClick={() => navigate('/content?new=1')}><FileText className="text-emerald-700" />إنشاء محتوى</Button>
-            <Button variant="outline" className="h-12 w-full justify-start" onClick={() => navigate('/accounts?new=1')}><Link2 className="text-emerald-700" />إضافة حساب</Button>
-          </CardContent>
+        <Card className="border-emerald-900/10 bg-[#e7f0eb] shadow-none">
+          <CardHeader><CardTitle className="flex items-center gap-2 text-lg"><MessageSquare className="size-5 text-emerald-700" />اختصار مفيد</CardTitle><CardDescription>من دون فتح صفحة جديدة</CardDescription></CardHeader>
+          <CardContent className="space-y-4"><p className="text-sm leading-7 text-slate-600">من أي صفحة اضغط <strong className="text-emerald-900">وكيل مدار</strong> أعلى الشاشة. اطلب صياغة رد، تفسير الخطوة، أو مراجعة محتوى قبل استخدامه.</p><Button variant="outline" className="h-11 w-full border-emerald-700/25 bg-white text-emerald-900 hover:bg-emerald-50" onClick={() => window.dispatchEvent(new CustomEvent('madar:assistant'))}><Sparkles />افتح وكيل مدار</Button><div className="flex items-start gap-2 text-xs leading-6 text-slate-500"><CheckCircle2 className="mt-1 size-4 shrink-0 text-emerald-700" />المساعد يقترح ويراجع، والقرار والإرسال الفعلي يبقى بيدك.</div></CardContent>
         </Card>
       </div>
 
-      <Card className="mt-6 border-slate-200/80 shadow-none">
-        <CardHeader><CardTitle className="flex items-center gap-2 text-lg"><Activity className="size-5 text-emerald-700" />آخر نشاطات الفريق</CardTitle><CardDescription>سجل تدقيق واضح لكل تغيير</CardDescription></CardHeader>
-        <CardContent><div className="space-y-0">{data.activities.slice(0, 5).map(activity => <div key={activity.id} className="flex gap-4 border-b py-4 last:border-0 last:pb-0 first:pt-0"><div className="mt-1.5 size-2 shrink-0 rounded-full bg-emerald-600" /><div className="min-w-0 flex-1"><p className="text-sm font-medium text-ink">{activity.action}</p><p className="mt-1 text-sm leading-6 text-slate-500">{activity.detail}</p></div><div className="shrink-0 text-left text-xs text-slate-400"><p>{activity.actor}</p><p className="mt-1">{formatDate(activity.time, true)}</p></div></div>)}</div></CardContent>
-      </Card>
-    </>
+      <Dialog open={guideOpen} onOpenChange={setGuideOpen}>
+        <DialogContent className="sm:max-w-xl" dir="rtl">
+          <DialogHeader><DialogTitle>كيف يعمل مدار؟</DialogTitle><DialogDescription>ثلاث خطوات مترابطة تبدأ بالحساب وتنتهي بعمل واضح.</DialogDescription></DialogHeader>
+          <div className="space-y-3">{[
+            ['١', 'اربط واختر', 'اربط حسابك ثم اعرض الصفحات المرتبطة به من صفحة الحسابات.'],
+            ['٢', 'افهم العميل', 'افتح المحادثة وراجع الرسائل، واستخدم وكيل مدار لصياغة رد مناسب.'],
+            ['٣', 'راجع ثم نفّذ', 'حدد الجمهور والمحتوى والموعد. راجع الحملة قبل حفظها، ولا يحدث إرسال دون مسار واضح.'],
+          ].map(([number, title, text]) => <div key={number} className="flex gap-3 rounded-xl border border-emerald-900/10 bg-[#f4f8f5] p-4"><span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-700 text-sm font-bold text-white">{number}</span><div><h3 className="font-semibold text-ink">{title}</h3><p className="mt-1 text-sm leading-6 text-slate-600">{text}</p></div></div>)}
+          </div>
+          <Button className="h-11 w-full bg-emerald-700 text-white hover:bg-emerald-800" onClick={() => { setGuideOpen(false); navigate(next.path) }}>{next.action}<ArrowLeft /></Button>
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }
