@@ -16,8 +16,8 @@ import {
 const app = express()
 const serverDir = path.dirname(fileURLToPath(import.meta.url))
 const distDir = path.join(serverDir, '..', 'dist')
-const port = Number(process.env.MADAR_API_PORT || 7101)
-const host = process.env.MADAR_API_HOST || '127.0.0.1'
+const port = Number(process.env.PORT || process.env.MADAR_API_PORT || 7101)
+const host = process.env.MADAR_API_HOST || (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1')
 const cookieName = 'madar_session'
 const loginAttempts = new Map()
 

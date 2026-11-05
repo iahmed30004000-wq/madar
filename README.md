@@ -83,6 +83,14 @@ server/
 scripts/dev.mjs    تشغيل Vite وAPI وإيقافهما معًا
 ```
 
+## النشر على Coolify
+
+- طريقة البناء: **Nixpacks** باستخدام `nixpacks.toml` وNode.js 24.
+- أمر البدء: `npm start`، ويحترم الخادم متغير `PORT` الذي توفره المنصة.
+- في الإنتاج اضبط `MADAR_API_HOST=0.0.0.0` و`MADAR_SECURE_COOKIE=true` و`MADAR_ALLOWED_ORIGINS` على نطاق HTTPS.
+- أضف Persistent Storage على `/data` واضبط `MADAR_DATA_DIR=/data` حتى تبقى قاعدة SQLite ومفتاح التشفير بين عمليات النشر.
+- فعّل Auto Deploy على فرع `main` لنشر كل دفعة جديدة تلقائيًا.
+
 ## التحقق
 
 - 33 اختبارًا عامًا في Chrome، بما فيها التنقل والنماذج والحفظ بعد إعادة التحميل والاستيراد والتصدير والاستجابة.
