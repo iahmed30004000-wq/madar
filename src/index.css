@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Primitive OKLCH palette */
+    --pine-950: 0.235 0.035 166;
+    --pine-700: 0.46 0.085 165;
+    --pine-100: 0.93 0.025 160;
+    --mist-50: 0.975 0.006 165;
+    --paper: 0.965 0.008 165;
+    --slate-600: 0.45 0.025 250;
+    --slate-400: 0.65 0.02 250;
+    --line: 0.89 0.01 180;
+    --danger: 0.56 0.2 25;
+    --info: 0.52 0.11 235;
+
+    /* Semantic tokens */
+    --background: var(--mist-50);
+    --foreground: var(--pine-950);
+    --card: 0.992 0.002 165;
+    --card-foreground: var(--pine-950);
+    --popover: var(--card);
+    --popover-foreground: var(--pine-950);
+    --primary: var(--pine-700);
+    --primary-foreground: 0.985 0.005 160;
+    --secondary: 0.94 0.008 180;
+    --secondary-foreground: var(--pine-950);
+    --muted: 0.94 0.008 180;
+    --muted-foreground: var(--slate-600);
+    --accent: var(--pine-100);
+    --accent-foreground: var(--pine-950);
+    --destructive: var(--danger);
+    --destructive-foreground: 0.985 0.005 25;
+    --border: var(--line);
+    --input: var(--line);
+    --ring: var(--pine-700);
+    --radius: 0.75rem;
+
+    /* Component tokens */
+    --sidebar-background: var(--pine-950);
+    --sidebar-foreground: 0.9 0.015 160;
+    --sidebar-primary: var(--pine-700);
+    --sidebar-primary-foreground: 0.985 0.005 160;
+    --sidebar-accent: 0.32 0.04 165;
+    --sidebar-accent-foreground: 0.96 0.015 160;
+    --sidebar-border: 0.35 0.03 165;
+    --sidebar-ring: var(--pine-700);
+  }
+
+  .dark {
+    --background: var(--pine-950);
+    --foreground: var(--mist-50);
+    --card: 0.28 0.035 166;
+    --card-foreground: var(--mist-50);
+    --popover: var(--card);
+    --popover-foreground: var(--mist-50);
+    --primary: var(--pine-100);
+    --primary-foreground: var(--pine-950);
+    --secondary: 0.34 0.03 166;
+    --secondary-foreground: var(--mist-50);
+    --muted: 0.34 0.03 166;
+    --muted-foreground: 0.78 0.02 180;
+    --accent: 0.36 0.04 165;
+    --accent-foreground: var(--mist-50);
+    --border: 0.38 0.025 165;
+    --input: 0.38 0.025 165;
+    --ring: var(--pine-100);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    min-width: 320px;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+    min-width: 320px;
+    min-height: 100dvh;
+    font-family: "IBM Plex Sans Arabic", Tahoma, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  :focus-visible {
+    outline: 2px solid oklch(var(--ring));
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: oklch(var(--pine-100));
+    color: oklch(var(--pine-950));
+  }
+
+  ::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5d2;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  @media (pointer: coarse) {
+    button,
+    a,
+    [role="button"],
+    [role="menuitem"],
+    [role="option"],
+    input,
+    select {
+      min-height: 44px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
