@@ -12,6 +12,7 @@ import {
   facebookPages, removeFacebookAccount, saveFacebookConfig, startFacebookOAuth,
   verifyFacebookAccount, HttpError,
 } from './facebook.mjs'
+import { chatGateway, gatewayStatus, testGateway } from './gateway.mjs'
 
 const app = express()
 const serverDir = path.dirname(fileURLToPath(import.meta.url))
@@ -132,6 +133,22 @@ app.delete('/api/facebook/accounts/:id', requireAuth, (req, res) => {
   removeFacebookAccount(req.params.id, req.user.id)
   res.json({ ok: true })
 })
+
+const aiAttempts = new Map()
+const checkAiRate = (userId, limit) => {
+  const recent = (aiAttempts.get(userId) || []).filter(time => time > Date.now() - 60_000)
+  if (recent.length >= limit) throw new HttpError(429, 'طلبات كثيرة على المساعد. انتظر دقيقة ثم حاول مجددًا.')
+  aiAttempts.set(userId, [...recent, Date.now()])
+}
+app.get('/api/ai/status', requireAuth, (_req, res) => res.json(gatewayStatus()))
+app.post('/api/ai/test', requireAuth, requireAdmin, asyncRoute(async (req, res) => {
+  checkAiRate(req.user.id, 20)
+  res.json(await testGateway())
+}))
+app.post('/api/ai/chat', requireAuth, asyncRoute(async (req, res) => {
+  checkAiRate(req.user.id, 30)
+  res.json(await chatGateway(req.body?.messages, { maxTokens: req.body?.maxTokens }))
+}))
 app.use('/api', (_req, res) => res.status(404).json({ message: 'مسار API غير موجود.' }))
 
 if (fs.existsSync(distDir)) {
