@@ -32,7 +32,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <section className="cinematic-hero relative isolate overflow-hidden rounded-[28px] bg-[#102f2b] text-white shadow-[0_24px_70px_-32px_rgba(16,47,43,0.75)]">
-        <img src="/assets/umayyad-mosque.jpg" alt="" aria-hidden="true" className="absolute inset-0 -z-20 h-full w-full object-cover object-center opacity-45" />
+        <picture><source media="(max-width: 640px)" srcSet="/assets/generated/08-mobile-hero.webp" /><img src="/assets/generated/01-madar-hero.webp" alt="" aria-hidden="true" className="absolute inset-0 -z-20 h-full w-full object-cover object-center opacity-60" /></picture>
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,rgba(9,34,31,0.98)_8%,rgba(16,47,43,0.87)_46%,rgba(16,47,43,0.30)_100%)]" />
         <div className="islamic-overlay absolute inset-0 -z-10 opacity-25" />
         <div className="relative grid min-h-[460px] gap-8 p-6 md:p-10 xl:grid-cols-[1.25fr_0.75fr] xl:items-end">
@@ -53,7 +53,7 @@ export default function Dashboard() {
             <button type="button" onClick={() => window.dispatchEvent(new CustomEvent('madar:assistant'))} className="mt-2 flex min-h-11 w-full cursor-pointer items-center justify-between rounded-xl px-4 text-sm text-emerald-100/70 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"><span className="flex items-center gap-2"><Sparkles className="size-4" />أريد مساعدة في هذه الخطوة</span></button>
           </div>
         </div>
-        <a href="https://commons.wikimedia.org/w/index.php?curid=83435998" target="_blank" rel="noreferrer" className="absolute bottom-3 left-4 rounded bg-black/20 px-2 py-1 text-[10px] text-white/55 transition-colors hover:text-white">الصورة: Vyacheslav Argenberg · CC BY 4.0</a>
+        <span className="absolute bottom-3 left-4 rounded bg-black/20 px-2 py-1 text-[10px] text-white/55">أصول بصرية مولدة خصيصًا لمدار</span>
       </section>
 
       <section aria-labelledby="workflow-title">

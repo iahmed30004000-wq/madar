@@ -31,9 +31,10 @@ export default function AuthScreen() {
   }
 
   return (
-    <div dir="rtl" className="flex min-h-[100dvh] items-center justify-center bg-[#142725] p-4 text-foreground">
-      <div className="grid w-full max-w-4xl overflow-hidden rounded-2xl border border-white/10 bg-white shadow-2xl md:grid-cols-[0.85fr_1.15fr]">
-        <div className="hidden bg-[#1b3531] p-8 text-white md:block">
+    <div dir="rtl" className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[#142725] p-4 text-foreground">
+      <img src="/assets/generated/02-login-background.webp" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-35" />
+      <div className="relative z-10 grid w-full max-w-4xl overflow-hidden rounded-2xl border border-white/10 bg-white shadow-2xl md:grid-cols-[0.85fr_1.15fr]">
+        <div className="hidden bg-[#1b3531]/95 p-8 text-white md:block">
           <div className="flex items-center gap-3"><div className="flex size-11 items-center justify-center rounded-xl bg-emerald-400 text-[#142725]"><Waypoints /></div><span className="text-2xl font-bold">مدار</span></div>
           <h2 className="mt-12 text-2xl font-bold leading-10">مساحة عمل فريقك، على خادمك أنت.</h2>
           <p className="mt-4 text-sm leading-7 text-slate-300">حسابات وحملات وبيانات الفريق محفوظة في قاعدة SQLite على الخادم المحلي، وليست معتمدة على خدمة سحابية خارجية.</p>

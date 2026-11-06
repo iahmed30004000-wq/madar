@@ -35,12 +35,12 @@ await new Promise(resolve => graph.listen(0, '127.0.0.1', resolve))
 
 const server = spawn(process.execPath, ['scripts/dev.mjs', '--host', '127.0.0.1', '--port', '7300'], {
   cwd: root, detached: true, windowsHide: true, stdio: 'ignore',
-  env: { ...process.env, MADAR_DATA_DIR: dataDir, MADAR_API_PORT: '7101', MADAR_ALLOWED_ORIGINS: baseUrl, FACEBOOK_GRAPH_BASE: `http://127.0.0.1:${graph.address().port}` },
+  env: { ...process.env, MADAR_DATA_DIR: dataDir, MADAR_API_PORT: '7102', MADAR_ALLOWED_ORIGINS: baseUrl, FACEBOOK_GRAPH_BASE: `http://127.0.0.1:${graph.address().port}` },
 })
 
 async function waitForServer() {
   for (let attempt = 0; attempt < 80; attempt++) {
-    try { if ((await fetch('http://127.0.0.1:7101/api/health', { signal: AbortSignal.timeout(800) })).ok) return } catch {}
+    try { if ((await fetch('http://127.0.0.1:7102/api/health', { signal: AbortSignal.timeout(800) })).ok) return } catch {}
     await sleep(400)
   }
   throw new Error('Development server did not become ready.')

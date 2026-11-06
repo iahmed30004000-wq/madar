@@ -151,5 +151,5 @@ function MessageBubble({ body, outgoing, meta, draft, attachments = 0 }: { body:
 }
 
 function EmptyConversation() {
-  return <div className="flex flex-1 items-center justify-center p-6"><EmptyState title="اختر محادثة" description="اختر حسابًا وصفحة ومحادثة لعرض الرسائل وتجهيز الرد." /></div>
+  return <div className="flex flex-1 flex-col items-center justify-center p-6"><img src="/assets/generated/07-empty-guidance.webp" alt="فانوس يرشد إلى الخطوة التالية" className="mb-4 size-24 rounded-2xl object-cover shadow-md" /><EmptyState title="اختر محادثة" description="اختر حسابًا وصفحة ومحادثة لعرض الرسائل وتجهيز الرد." /></div>
 }

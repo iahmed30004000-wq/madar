@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Bot, CheckCircle2, Loader2, Send, ShieldCheck, Sparkles } from 'lucide-react'
+import { CheckCircle2, Loader2, Send, ShieldCheck, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -60,7 +60,7 @@ export default function AssistantPanel({ open, onOpenChange }: { open: boolean; 
       <SheetContent side="left" className="flex w-full flex-col border-l border-emerald-900/15 bg-[#f3f7f4] p-0 sm:max-w-lg" aria-describedby="assistant-description">
         <SheetHeader className="border-b border-emerald-900/10 bg-[#102f2b] px-5 py-5 text-right">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3"><span className="flex size-11 items-center justify-center rounded-xl bg-emerald-400 text-[#102f2b]"><Bot /></span><div><SheetTitle className="text-xl text-white">وكيل مدار</SheetTitle><SheetDescription id="assistant-description" className="mt-1 text-emerald-100/75">مساعدك للخطوة التالية، وللردود والمحتوى.</SheetDescription></div></div>
+            <div className="flex items-center gap-3"><img src="/assets/generated/03-madar-assistant.webp" alt="رمز وكيل مدار" className="size-11 shrink-0 rounded-xl object-cover ring-1 ring-emerald-300/30" /><div><SheetTitle className="text-xl text-white">وكيل مدار</SheetTitle><SheetDescription id="assistant-description" className="mt-1 text-emerald-100/75">مساعدك للخطوة التالية، وللردود والمحتوى.</SheetDescription></div></div>
             <Badge variant="outline" className={cn('border-emerald-300/25 bg-white/5 text-emerald-100', status?.configured && 'border-emerald-300/50')}><span className={cn('ml-1 size-1.5 rounded-full bg-amber-400', status?.configured && 'bg-emerald-400')} />{status?.configured ? 'المزود الرئيسي' : 'غير مكتمل'}</Badge>
           </div>
         </SheetHeader>

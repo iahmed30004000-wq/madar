@@ -11,7 +11,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:7101',
+        target: `http://127.0.0.1:${process.env.MADAR_API_PORT || 7101}`,
         changeOrigin: true,
         secure: false,
       },

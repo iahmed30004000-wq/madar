@@ -14,7 +14,7 @@ const baseUrl = 'http://127.0.0.1:7300'
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 for (let attempt = 0; attempt < 5; attempt++) {
-  try { await fetch('http://127.0.0.1:7101/api/health', { signal: AbortSignal.timeout(500) }); throw new Error('Port 7101 is already in use; stop the existing development server first.') } catch (error) { if (error.message.includes('already in use')) throw error }
+  try { await fetch('http://127.0.0.1:7102/api/health', { signal: AbortSignal.timeout(500) }); throw new Error('Port 7102 is already in use; stop the existing development server first.') } catch (error) { if (error.message.includes('already in use')) throw error }
 }
 
 const server = spawn(process.execPath, ['scripts/dev.mjs', '--host', '127.0.0.1', '--port', '7300'], {
@@ -22,13 +22,13 @@ const server = spawn(process.execPath, ['scripts/dev.mjs', '--host', '127.0.0.1'
   detached: true,
   windowsHide: true,
   stdio: 'ignore',
-  env: { ...process.env, MADAR_DATA_DIR: dataDir, MADAR_API_PORT: '7101', MADAR_ALLOWED_ORIGINS: baseUrl },
+  env: { ...process.env, MADAR_DATA_DIR: dataDir, MADAR_API_PORT: '7102', MADAR_ALLOWED_ORIGINS: baseUrl },
 })
 
 async function waitForServer() {
   for (let attempt = 0; attempt < 80; attempt++) {
     try {
-      const response = await fetch('http://127.0.0.1:7101/api/health', { signal: AbortSignal.timeout(800) })
+      const response = await fetch('http://127.0.0.1:7102/api/health', { signal: AbortSignal.timeout(800) })
       if (response.ok) return
     } catch {}
     await sleep(400)
